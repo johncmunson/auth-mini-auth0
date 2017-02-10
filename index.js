@@ -7,15 +7,21 @@ var app = express();
 
 var config = require('./authConfig.js')
 
-app.use(session({secret: config.secret}));
+app.use(session({secret: 'asdfadsfasdf'}));
 app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(new Auth0Strategy(
-  config.authConfig
-, function(accessToken, refreshToken, extraParams, profile, done) {
-  return done(null, profile);
-}));
+    {
+        domain: config.domain,
+        clientID: config.clientID,
+        clientSecret: config.secret,
+        callbackURL: 'http://localhost:3000/auth/callback'
+    },
+    function(accessToken, refreshToken, extraParams, profile, done) {
+        return done(null, profile);
+    }
+));
 
 app.get('/auth', passport.authenticate('auth0'));
 
@@ -33,9 +39,9 @@ passport.deserializeUser(function(obj, done) {
 });
 
 app.get('/auth/me', function(req,res,next){
-  if (!req.user)
+  if (!req.user) {
     return res.status(404).send('user not found');
-
+  }
   return res.status(200).send(req.user);
 })
 
